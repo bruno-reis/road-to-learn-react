@@ -14,14 +14,20 @@ const PARAM_HPP = 'histsPerPage='
 class App extends Component {
   constructor(props) {
     super(props)
-    this.state = {result: null, searchTerm: DEFAULT_QUERY}
+    this.state = {results: null, searchKey: '', searchTerm: DEFAULT_QUERY}
   }
 
   setSearchTopstories = (result) => {
     const {hits, page} = result
-    const oldHits = page !== 0 ? this.state.result.hits : []
+    const {searchKey, results} = this.state
+    const oldHits = results && results[searchKey] ? results[searchKey].hits : []
     const updatedHits = [...oldHits, ...hits]
-    this.setState({result: {hits: updatedHits, page}})
+    this.setState({
+      results: {
+        ...results,
+        [searchKey]: {hits: updatedHits, page}
+      }
+    })
   }
 
   fetchSearchTopstories = (searchTerm, page) =>
@@ -31,10 +37,22 @@ class App extends Component {
       .then(result => this.setSearchTopstories(result))
       .catch(e => e)
 
+  needsToSearchTopstories = (searchTerm) =>
+    !this.state.results[searchTerm]
+
   onDismiss = (id) => {
-    const updatedHits = this.state.result.hits.filter(item => item.objectID !== id)
+    const {searchKey, results} = this.state
+    const {hits, page} = results[searchKey]
+
+    const updatedHits = hits.filter(item => item.objectID !== id)
+
     console.log(updatedHits)
-    this.setState({result: {...this.state.result, hits: updatedHits}})
+    this.setState({
+      result: {
+        ...results,
+        [searchKey]: {hits: updatedHits}
+      }
+    })
   }
 
   onSearchChange = (event) =>
@@ -42,26 +60,30 @@ class App extends Component {
 
   onSearchSubmit = (event) => {
     const {searchTerm} = this.state
-    this.fetchSearchTopstories(searchTerm, DEFAULT_PAGE)
+    this.setState({searchKey: searchTerm})
+    if (this.needsToSearchTopstories(searchTerm)) this.fetchSearchTopstories(searchTerm, DEFAULT_PAGE)
     event.preventDefault()
   }
 
   componentDidMount() {
     const {searchTerm} = this.state
+    this.setState({searchKey: searchTerm})
     this.fetchSearchTopstories(searchTerm, DEFAULT_PAGE)
   }
 
   render() {
-    const {searchTerm, result} = this.state
-    const page = (result && result.page) || 0
+    const {searchTerm, results, searchKey} = this.state
+    const page = (results && results[searchKey] && results[searchKey].page) || 0
+    const list = (results && results[searchKey] && results[searchKey].page) || []
+
     return (
       <div className="page">
         <div className="interactions">
           <Search value={searchTerm} onChange={this.onSearchChange} onSubmit={this.onSearchSubmit}>Search</Search>
         </div>
-        { result ? <Table list={result.hits} onDismiss={this.onDismiss}/> : null }
+        <Table list={list} onDismiss={this.onDismiss}/>
         <div className="interactions">
-          <Button onClick={() => this.fetchSearchTopstories(searchTerm, page+1)}>More</Button>
+          <Button onClick={() => this.fetchSearchTopstories(searchKey, page+1)}>More</Button>
         </div>
       </div>
     )
