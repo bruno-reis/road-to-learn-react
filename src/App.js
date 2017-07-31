@@ -1,4 +1,5 @@
 import React, {Component} from 'react'
+import PropTypes from 'prop-types'
 import './App.css'
 
 const DEFAULT_QUERY = 'redux'
@@ -92,6 +93,13 @@ const Search = ({value, onChange, onSubmit, children}) =>
     <button type="submit">{children}</button>
   </form>
 
+  Search.proptypes = {
+    value: PropTypes.string,
+    onChange: PropTypes.func.isRequired,
+    onSubmit: PropTypes.func.isRequired,
+    children: PropTypes.node.isRequired
+  }
+
 const Table = ({list, onDismiss}) =>
   <div className="table">
     { list.map(item =>
@@ -109,7 +117,18 @@ const Table = ({list, onDismiss}) =>
     )}
   </div>
 
+  Table.propTypes = {
+    list: PropTypes.array.isRequired,
+    onDismiss: PropTypes.func.isRequired
+  }
+
 const Button = ({onClick, className = '', children}) =>
   <button className={className} onClick={onClick} type="button">{children}</button>
+
+  Button.propTypes = {
+    onClick: PropTypes.func.isRequired,
+    className: PropTypes.string,
+    children: PropTypes.node.isRequired
+  }
 
 export default App;
