@@ -15,7 +15,7 @@ const PARAM_HPP = 'hitsPerPage='
 class App extends Component {
   constructor(props) {
     super(props)
-    this.state = {results: null, searchKey: '', searchTerm: DEFAULT_QUERY}
+    this.state = {results: null, searchKey: '', searchTerm: DEFAULT_QUERY, isLoading: false}
   }
 
   componentDidMount() {
@@ -33,11 +33,14 @@ class App extends Component {
       results: {
         ...results,
         [searchKey]: {hits: updatedHits, page}
-      }
+      },
+      isLoading: false
     })
   }
 
   fetchSearchTopstories = (searchTerm, page) => {
+    this.setState({isLoading: true})
+
     fetch(`${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTerm}&${PARAM_PAGE}${page}&${PARAM_HPP}${DEFAULT_HPP}`)
       .then(response => response.json())
       .then(result => this.setSearchTopstories(result))
@@ -69,7 +72,7 @@ class App extends Component {
   }
 
   render() {
-    const {searchTerm, results, searchKey} = this.state
+    const {searchTerm, results, searchKey, isLoading} = this.state
     const page = (results && results[searchKey] && results[searchKey].page) || 0
     const list = (results && results[searchKey] && results[searchKey].hits) || []
 
@@ -80,7 +83,10 @@ class App extends Component {
         </div>
         <Table list={list} onDismiss={this.onDismiss}/>
         <div className="interactions">
-          <Button onClick={() => this.fetchSearchTopstories(searchKey, page+1)}>More</Button>
+          {isLoading
+            ? <Loading/>
+            : <Button onClick={() => this.fetchSearchTopstories(searchKey, page + 1)}>More</Button>
+          }
         </div>
       </div>
     )
@@ -93,12 +99,6 @@ const Search = ({value, onChange, onSubmit, children}) =>
     <button type="submit">{children}</button>
   </form>
 
-  // Search.proptypes = {
-  //   value: PropTypes.string,
-  //   onChange: PropTypes.func.isRequired,
-  //   onSubmit: PropTypes.func.isRequired,
-  //   children: PropTypes.node.isRequired
-  // }
 
 const Table = ({list, onDismiss}) =>
   <div className="table">
@@ -117,19 +117,11 @@ const Table = ({list, onDismiss}) =>
     )}
   </div>
 
-  // Table.propTypes = {
-  //   list: PropTypes.array.isRequired,
-  //   onDismiss: PropTypes.func.isRequired
-  // }
-
 const Button = ({onClick, className = '', children}) =>
   <button className={className} onClick={onClick} type="button">{children}</button>
 
-  // Button.propTypes = {
-  //   onClick: PropTypes.func.isRequired,
-  //   className: PropTypes.string,
-  //   children: PropTypes.node.isRequired
-  // }
+const Loading = () =>
+  <div>Loading... </div>
 
 export default App;
 
