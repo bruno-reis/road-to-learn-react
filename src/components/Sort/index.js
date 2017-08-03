@@ -1,5 +1,5 @@
 import React from 'react'
-import Button from '../components/Button'
+import Button from 'components/Button'
 
 const Sort = ({sortKey, activeSortKey, onSort, children}) => {
   const sortClass = ['button-inline']

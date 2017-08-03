@@ -2,8 +2,8 @@ import React, {Component} from 'react'
 import {sortBy} from 'lodash'
 import './index.css'
 
-import Button from '../components/Button'
-import Sort from '../components/Sort'
+import Button from 'components/Button'
+import Sort from 'components/Sort'
 
 
 const SORTS = {
